@@ -225,7 +225,7 @@ const Sidebar: React.FC<SidebarProps> = ({ h3Data, loading, onClose }) => {
             <ul className="feature-list">
               <li>Priority scores</li>
               <li>Recommended tree counts</li>
-              <li>Projected temperature reductions</li>
+              <li>Projected temperature changes</li>
               <li>Air quality improvements</li>
               <li>Environmental justice indicators</li>
             </ul>
@@ -401,23 +401,23 @@ const Sidebar: React.FC<SidebarProps> = ({ h3Data, loading, onClose }) => {
                   </div>
                 </div>
 
-                {/* Temperature Reduction */}
+                {/* Temperature Change */}
                 <div className="impact-card" style={{ marginBottom: '1rem' }}>
                   <div className="impact-icon">
                     <ThermometerIcon />
                   </div>
                   <div className="impact-content">
-                    <div className="impact-label">Temperature Reduction Over Time</div>
-                    <div className="impact-value">
-                      {(prediction.summary.avg_temperature_reduction_f || 0).toFixed(2)}°F
+                    <div className="impact-label">Temperature Change Over Time</div>
+                    <div className="impact-value" style={{ color: (prediction.summary.avg_temperature_reduction_f || 0) > 0 ? '#ff6b6b' : '#2d8659' }}>
+                      {(-(prediction.summary.avg_temperature_reduction_f || 0)).toFixed(2)}°F
                     </div>
                     <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '0.25rem' }}>
                       Average over {predictionYears} years
                     </div>
                     <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Now: {(prediction.current_state.temperature_reduction_f || 0).toFixed(2)}°F</span>
+                      <span>Now: {(-(prediction.current_state.temperature_reduction_f || 0)).toFixed(2)}°F</span>
                       <span>→</span>
-                      <span>In {predictionYears} years: {(prediction.yearly_projections[prediction.yearly_projections.length - 1]?.temperature_reduction_f || 0).toFixed(2)}°F</span>
+                      <span>In {predictionYears} years: {(-(prediction.yearly_projections[prediction.yearly_projections.length - 1]?.temperature_reduction_f || 0)).toFixed(2)}°F</span>
                     </div>
                   </div>
                 </div>
