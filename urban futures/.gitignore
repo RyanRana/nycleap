@@ -35,6 +35,15 @@ data/models/*.bin
 data/models/*.pkl
 !data/models/*.json
 
+# Large coordinate/tree data files
+data/processed/*tree*coordinates*.json
+data/processed/*planting*locations*.json
+frontend/public/data/processed/*coordinates*.json
+frontend/build/data/processed/*.json
+
+# Compliance data (if accidentally added)
+../Compliance data merged/
+
 # Environment
 .env
 .env.local

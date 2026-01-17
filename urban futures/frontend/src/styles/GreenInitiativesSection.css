@@ -1,6 +1,7 @@
 .initiatives-section {
   margin-top: 2rem;
   padding-top: 0;
+  margin-bottom: 2rem; /* Ensure space below section */
 }
 
 .initiatives-header {
@@ -22,6 +23,26 @@
 /* Action Buttons */
 .initiatives-action {
   margin-bottom: 1.5rem;
+}
+
+/* Guest Notice */
+.guest-notice {
+  background: linear-gradient(135deg, rgba(249, 250, 251, 0.95) 0%, rgba(229, 231, 235, 0.95) 100%);
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  backdrop-filter: blur(8px);
+}
+
+.guest-notice span {
+  color: #666;
+  font-weight: 400;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
 .add-initiative-btn {
@@ -188,19 +209,21 @@
 /* Initiatives Grid */
 .initiatives-grid {
   position: relative;
-  min-height: 200px;
-  padding-bottom: 1rem;
-  padding-top: 0.5rem;
+  min-height: 360px; /* Accommodate card stack (280px card + 80px max offset) */
+  padding-bottom: 2rem;
+  padding-top: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin-bottom: 2rem; /* Extra space after cards */
 }
 
 .no-initiatives {
   text-align: center;
-  padding: 0.5rem 0.5rem;
+  padding: 2rem 0.5rem;
   color: #999;
   grid-column: 1 / -1;
+  width: 100%;
 }
 
 .empty-icon {
@@ -239,22 +262,22 @@
 }
 
 .initiative-card.overlapping:nth-of-type(2) {
-  transform: translateY(20px) rotate(-1deg);
+  transform: translateY(15px) rotate(-1deg);
   opacity: 0.95;
 }
 
 .initiative-card.overlapping:nth-of-type(3) {
-  transform: translateY(40px) rotate(1deg);
+  transform: translateY(30px) rotate(1deg);
   opacity: 0.9;
 }
 
 .initiative-card.overlapping:nth-of-type(4) {
-  transform: translateY(60px) rotate(2deg);
+  transform: translateY(45px) rotate(2deg);
   opacity: 0.85;
 }
 
 .initiative-card.overlapping:nth-of-type(n+5) {
-  transform: translateY(80px) rotate(3deg);
+  transform: translateY(60px) rotate(3deg);
   opacity: 0.8;
 }
 
@@ -302,20 +325,20 @@
 }
 
 .card-nav-prev {
-  left: -50px;
+  left: 10px;
 }
 
 .card-nav-next {
-  right: -50px;
+  right: 10px;
 }
 
 @media (max-width: 768px) {
   .card-nav-prev {
-    left: 10px;
+    left: 8px;
   }
   
   .card-nav-next {
-    right: 10px;
+    right: 8px;
   }
 }
 

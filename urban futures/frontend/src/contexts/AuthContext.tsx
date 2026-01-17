@@ -8,7 +8,7 @@ interface AuthContextType {
   session: Session | null;
   isGuest: boolean;
   loading: boolean;
-  signUp: (email: string, password: string, userType: 'regular' | 'corporate', companyLogo?: File) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, userType: 'regular' | 'corporate' | 'community_leader', companyLogo?: File) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   continueAsGuest: () => void;
@@ -71,7 +71,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (
     email: string,
     password: string,
-    userType: 'regular' | 'corporate',
+    userType: 'regular' | 'corporate' | 'community_leader',
     companyLogo?: File
   ): Promise<{ error: any }> => {
     try {

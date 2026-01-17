@@ -12,6 +12,7 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.04);
   animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   z-index: 100;
+  border: 1px solid rgba(20, 83, 45, 0.1);
 }
 
 .sidebar-close {
@@ -21,24 +22,26 @@
   width: 32px;
   height: 32px;
   border: none;
-  background: transparent;
+  background: rgba(20, 83, 45, 0.05);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: all 0.2s ease;
   z-index: 101;
-  color: #64748b;
+  color: #14532d;
 }
 
 .sidebar-close:hover {
-  background: rgba(0, 0, 0, 0.05);
-  color: #1a1a1a;
+  background: rgba(20, 83, 45, 0.15);
+  color: #14532d;
+  transform: scale(1.05);
 }
 
 .sidebar-close:active {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(20, 83, 45, 0.25);
+  transform: scale(0.95);
 }
 
 .sidebar-close svg {
@@ -203,10 +206,10 @@
 }
 
 .share-button {
-  padding: 0.5rem 0.9rem;
+  padding: 0.65rem 1.15rem;
   border-radius: 999px;
-  border: 1px solid rgba(20, 83, 45, 0.4);
-  background: rgba(20, 83, 45, 0.08);
+  border: 1.5px solid rgba(20, 83, 45, 0.3);
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.1) 0%, rgba(20, 83, 45, 0.08) 100%);
   color: #14532d;
   font-size: 0.8rem;
   font-weight: 600;
@@ -220,19 +223,21 @@
 }
 
 .share-button:hover {
-  background: rgba(20, 83, 45, 0.16);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.2) 0%, rgba(20, 83, 45, 0.15) 100%);
+  box-shadow: 0 2px 8px rgba(20, 83, 45, 0.15);
   transform: translateY(-1px);
+  border-color: rgba(22, 163, 74, 0.5);
 }
 
 .share-button.secondary {
-  border-color: rgba(55, 65, 81, 0.3);
-  background: rgba(17, 24, 39, 0.02);
-  color: #111827;
+  border-color: rgba(100, 116, 139, 0.3);
+  background: linear-gradient(135deg, rgba(241, 245, 249, 0.9) 0%, rgba(226, 232, 240, 0.9) 100%);
+  color: #475569;
 }
 
 .share-button.secondary:hover {
-  background: rgba(17, 24, 39, 0.06);
+  background: linear-gradient(135deg, rgba(226, 232, 240, 1) 0%, rgba(203, 213, 225, 1) 100%);
+  border-color: rgba(100, 116, 139, 0.5);
 }
 
 .loading {
@@ -272,15 +277,16 @@
 }
 
 .metric-card {
-  background: rgba(255, 255, 255, 0.6);
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.9) 0%, rgba(249, 250, 251, 0.9) 100%);
+  border: 1px solid rgba(20, 83, 45, 0.1);
   border-radius: 12px;
-  padding: 2rem;
+  padding: 1.5rem;
   margin-bottom: 1.5rem;
   backdrop-filter: blur(10px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgba(20, 83, 45, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .metric-card::before {
@@ -290,13 +296,14 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.1), transparent);
+  background: linear-gradient(90deg, transparent, rgba(22, 163, 74, 0.08), transparent);
   transition: left 0.5s ease;
 }
 
 .metric-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 16px rgba(20, 83, 45, 0.15), 0 2px 6px rgba(0, 0, 0, 0.06);
+  border-color: rgba(22, 163, 74, 0.3);
 }
 
 .metric-card:hover::before {
@@ -458,46 +465,51 @@
 }
 
 .impact-section {
-  margin-top: 2.5rem;
+  margin-top: 2rem;
 }
 
 .impact-section h3 {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   color: #14532d;
-  margin-bottom: 1.5rem;
-  font-weight: 700;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
 }
 
 .impact-card {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
-  background: rgba(255, 255, 255, 0.6);
+  gap: 1rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(249, 250, 251, 0.95) 100%);
+  border: 1px solid rgba(20, 83, 45, 0.1);
   border-radius: 12px;
-  padding: 1.75rem;
+  padding: 1.25rem;
   margin-bottom: 1rem;
   transition: all 0.3s ease;
   position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
 }
 
 .impact-card:hover {
   transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 4px 12px rgba(20, 83, 45, 0.12);
+  border-color: rgba(22, 163, 74, 0.3);
 }
 
 .impact-icon {
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.15) 0%, rgba(20, 83, 45, 0.15) 100%);
 }
 
 .impact-icon svg {
-  width: 100%;
-  height: 100%;
+  width: 22px;
+  height: 22px;
   color: #14532d;
 }
 
@@ -506,10 +518,12 @@
 }
 
 .impact-label {
-  font-size: 1rem;
+  font-size: 0.85rem;
   color: #64748b;
-  margin-bottom: 0.5rem;
-  font-weight: 500;
+  margin-bottom: 0.35rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .impact-value {
@@ -870,5 +884,92 @@
   .explanation-text {
     font-size: 0.75rem;
   }
+}
+
+/* Planting Availability Section */
+.planting-availability-section {
+  background: linear-gradient(135deg, rgba(240, 253, 244, 0.6) 0%, rgba(220, 252, 231, 0.4) 100%);
+  border: 2px solid #bbf7d0;
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.guidelines-link {
+  color: #16a34a;
+  font-weight: 600;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.guidelines-link:hover {
+  color: #15803d;
+  text-decoration: underline;
+}
+
+.planting-summary-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.planting-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.legend-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.legend-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+  border: 2px solid #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.legend-dot.existing {
+  background-color: #ef4444; /* Red for existing trees */
+}
+
+.legend-dot.available {
+  background-color: #22c55e; /* Green for available planting spots */
+}
+
+.legend-label {
+  flex: 1;
+  font-size: 0.9rem;
+  color: #374151;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+.legend-count {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #111827;
+}
+
+.guidelines-link.inline-link {
+  font-size: 0.85em;
+  font-weight: 500;
+  text-decoration: underline;
+}
+
+.zip-divider.planting-section-divider {
+  margin-top: 2rem;
 }
 

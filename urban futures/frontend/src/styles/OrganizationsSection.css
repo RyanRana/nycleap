@@ -1,0 +1,214 @@
+.organizations-section {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #f8f9ff;
+  border-radius: 8px;
+}
+
+.organizations-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.organizations-section h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.org-count {
+  background: #667eea;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.loading-text {
+  text-align: center;
+  color: #888;
+  padding: 1rem;
+  font-size: 0.9rem;
+}
+
+.organizations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.organization-item {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.organization-item:hover {
+  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+}
+
+.org-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.org-header:hover {
+  background: #f8f9ff;
+}
+
+.org-main-info {
+  flex: 1;
+}
+
+.org-main-info h4 {
+  margin: 0 0 0.25rem 0;
+  color: #667eea;
+  font-size: 1rem;
+}
+
+.org-description {
+  margin: 0.5rem 0 0 0;
+  color: #666;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+.org-toggle {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #667eea;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.org-toggle:hover {
+  background: #f0f0f0;
+}
+
+.org-details {
+  padding: 0 1rem 1rem 1rem;
+  border-top: 1px solid #e0e0e0;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 500px;
+  }
+}
+
+.org-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.org-link {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  background: #f0f0f0;
+  color: #667eea;
+  text-decoration: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.org-link:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-1px);
+}
+
+.leaders-section {
+  margin-top: 1rem;
+}
+
+.leaders-section h5 {
+  margin: 0 0 0.75rem 0;
+  color: #333;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.leaders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.leader-card {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: #f8f9ff;
+  border-radius: 6px;
+}
+
+.leader-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.leader-info {
+  flex: 1;
+}
+
+.leader-email {
+  font-weight: 600;
+  color: #333;
+  font-size: 0.9rem;
+}
+
+.leader-role {
+  color: #667eea;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+.leader-bio {
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .organizations-section {
+    padding: 0.75rem;
+  }
+
+  .org-header {
+    padding: 0.75rem;
+  }
+
+  .org-details {
+    padding: 0 0.75rem 0.75rem 0.75rem;
+  }
+}

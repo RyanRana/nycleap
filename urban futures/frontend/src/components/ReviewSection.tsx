@@ -3,6 +3,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase, Review } from '../lib/supabase';
 import '../styles/ReviewSection.css';
 
+// Cache for reviews
+const reviewsCache = new Map<string, { data: Review[]; timestamp: number }>();
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
 interface ReviewSectionProps {
   zipcode: string;
   h3Cell?: string;
@@ -51,6 +55,23 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ zipcode, h3Cell }) => {
     try {
       setLoading(true);
       
+      // Check cache first
+      const cached = reviewsCache.get(zipcode);
+      if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+        console.log('📦 Using cached reviews data');
+        const reviewsData = cached.data;
+        setReviews(reviewsData);
+        
+        if (user) {
+          const existing = reviewsData.find(r => r.user_id === user.id);
+          setUserReview(existing || null);
+        } else {
+          setUserReview(null);
+        }
+        setLoading(false);
+        return;
+      }
+      
       // Load all reviews for this zipcode
       const { data, error } = await supabase
         .from('reviews')
@@ -64,6 +85,11 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ zipcode, h3Cell }) => {
       if (error) throw error;
 
       const reviewsData = data || [];
+      
+      // Cache the result
+      reviewsCache.set(zipcode, { data: reviewsData, timestamp: Date.now() });
+      console.log('💾 Cached reviews data');
+      
       setReviews(reviewsData);
 
       // Check if current user has already reviewed
@@ -224,16 +250,16 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ zipcode, h3Cell }) => {
         </div>
       </div>
 
-      {/* Sign in button outside dropdown */}
-      {isGuest && (
-        <div className="guest-notice" style={{ marginTop: '1rem', marginBottom: '1rem' }}>
-          <span>🔒 Sign in to leave a review</span>
-        </div>
-      )}
+      {/* Add Review button outside dropdown - aligned with header */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
+        {isGuest && (
+          <span className="guest-notice" style={{ margin: 0 }}>
+            🔒 Sign in to leave a review
+          </span>
+        )}
 
-      <div className={`review-content ${expanded ? 'expanded' : ''}`}>
         {user && !isGuest && (
-          <div className="review-action">
+          <div className="review-action" style={{ margin: 0 }}>
             {userReview ? (
               <button className="edit-review-btn" onClick={() => setShowForm(!showForm)}>
                 {showForm ? 'Cancel' : 'Edit Your Review'}
@@ -245,44 +271,47 @@ const ReviewSection: React.FC<ReviewSectionProps> = ({ zipcode, h3Cell }) => {
             )}
           </div>
         )}
+      </div>
 
-        {user && !isGuest && showForm && (
-          <form className="review-form" onSubmit={handleSubmitReview}>
-            <div className="form-group">
-              <label>Your Rating</label>
-              <StarRating rating={rating} onRate={setRating} />
-            </div>
+      {/* Review form outside dropdown */}
+      {user && !isGuest && showForm && (
+        <form className="review-form" onSubmit={handleSubmitReview} style={{ marginBottom: '1rem' }}>
+          <div className="form-group">
+            <label>Your Rating</label>
+            <StarRating rating={rating} onRate={setRating} />
+          </div>
 
-            <div className="form-group">
-              <label>Your Review</label>
-              <textarea
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                placeholder="Share your thoughts about this neighborhood..."
-                required
-                rows={4}
+          <div className="form-group">
+            <label>Your Review</label>
+            <textarea
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Share your thoughts about this neighborhood..."
+              required
+              rows={4}
+            />
+          </div>
+
+          <div className="form-group checkbox-group">
+            <label>
+              <input
+                type="checkbox"
+                checked={livesHere}
+                onChange={(e) => setLivesHere(e.target.checked)}
               />
-            </div>
+              <span>I live in this neighborhood</span>
+            </label>
+          </div>
 
-            <div className="form-group checkbox-group">
-              <label>
-                <input
-                  type="checkbox"
-                  checked={livesHere}
-                  onChange={(e) => setLivesHere(e.target.checked)}
-                />
-                <span>I live in this neighborhood</span>
-              </label>
-            </div>
+          {error && <div className="review-error">{error}</div>}
 
-            {error && <div className="review-error">{error}</div>}
+          <button type="submit" className="submit-review-btn" disabled={submitting}>
+            {submitting ? 'Submitting...' : userReview ? 'Update Review' : 'Submit Review'}
+          </button>
+        </form>
+      )}
 
-            <button type="submit" className="submit-review-btn" disabled={submitting}>
-              {submitting ? 'Submitting...' : userReview ? 'Update Review' : 'Submit Review'}
-            </button>
-          </form>
-        )}
-
+      <div className={`review-content ${expanded ? 'expanded' : ''}`}>
         <div className="reviews-list">
         {reviews.map((review) => (
           <div key={review.id} className="review-card">

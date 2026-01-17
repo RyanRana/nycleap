@@ -6,7 +6,7 @@ interface AuthModalProps {
   onClose: () => void;
 }
 
-type AuthView = 'welcome' | 'login' | 'signup' | 'corporate-signup';
+type AuthView = 'welcome' | 'login' | 'signup' | 'corporate-signup' | 'community-leader-signup';
 
 // SVG Icons (Filled)
 const UserIcon = () => (
@@ -24,6 +24,12 @@ const KeyIcon = () => (
 const BuildingIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
     <path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/>
+  </svg>
+);
+
+const CommunityIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/>
   </svg>
 );
 
@@ -87,7 +93,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
     setLoading(true);
 
     try {
-      const userType = view === 'corporate-signup' ? 'corporate' : 'regular';
+      const userType = view === 'corporate-signup' ? 'corporate' : view === 'community-leader-signup' ? 'community_leader' : 'regular';
       const { error } = await signUp(email, password, userType, companyLogo || undefined);
       
       if (error) {
@@ -165,6 +171,16 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
           <div className="option-content">
             <div className="option-title">Corporate Ambassador</div>
             <div className="option-description">Represent your company's green initiatives</div>
+          </div>
+        </button>
+
+        <button className="auth-option-btn primary" onClick={() => setView('community-leader-signup')}>
+          <div className="option-icon">
+            <CommunityIcon />
+          </div>
+          <div className="option-content">
+            <div className="option-title">Community Leader</div>
+            <div className="option-description">Post events & represent your organization</div>
           </div>
         </button>
 
@@ -336,6 +352,59 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
     </div>
   );
 
+  const renderCommunityLeaderSignupView = () => (
+    <div className="auth-form-container">
+      <button type="button" className="back-button" onClick={() => setView('welcome')}>
+        ← Back
+      </button>
+      <h2>Community Leader</h2>
+      <p className="corporate-info">
+        Community leaders represent organizations and can post events, news, and information to their neighborhoods.
+      </p>
+      <form onSubmit={handleSignup}>
+        <div className="form-group">
+          <label htmlFor="leader-email">Email</label>
+          <input
+            id="leader-email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            placeholder="you@organization.org"
+          />
+          <small className="form-hint">You'll set up your organization in the next step</small>
+        </div>
+        <div className="form-group">
+          <label htmlFor="leader-password">Password</label>
+          <input
+            id="leader-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            placeholder="••••••••"
+            minLength={6}
+          />
+        </div>
+        <div className="form-group">
+          <label htmlFor="leader-confirm">Confirm Password</label>
+          <input
+            id="leader-confirm"
+            type="password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            placeholder="••••••••"
+          />
+        </div>
+        {error && <div className="auth-error">{error}</div>}
+        <button type="submit" className="auth-submit-btn" disabled={loading}>
+          {loading ? 'Creating account...' : 'Create Community Leader Account'}
+        </button>
+      </form>
+    </div>
+  );
+
   return (
     <div className="auth-modal-overlay" onClick={onClose}>
       <div className="auth-modal" onClick={(e) => e.stopPropagation()}>
@@ -347,6 +416,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ onClose }) => {
         {view === 'login' && renderLoginView()}
         {view === 'signup' && renderSignupView()}
         {view === 'corporate-signup' && renderCorporateSignupView()}
+        {view === 'community-leader-signup' && renderCommunityLeaderSignupView()}
       </div>
     </div>
   );

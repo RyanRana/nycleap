@@ -93,6 +93,8 @@
 /* Action Buttons */
 .review-action {
   margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
 }
 
 .add-review-btn,
@@ -100,13 +102,15 @@
   background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
   color: white;
   border: none;
-  padding: 0.875rem 1.5rem;
-  border-radius: 12px;
+  padding: 0.625rem 1.25rem;
+  border-radius: 8px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-  width: 100%;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.3);
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 0.95rem;
+  white-space: nowrap;
 }
 
 .add-review-btn:hover,
@@ -116,13 +120,12 @@
 }
 
 .guest-notice {
-  background: #f0fdf4;
-  border: 2px solid #bbf7d0;
-  border-radius: 12px;
-  padding: 1rem;
-  text-align: center;
-  color: #166534;
-  font-weight: 500;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  color: #666;
+  font-weight: 400;
   margin-bottom: 1.5rem;
 }
 

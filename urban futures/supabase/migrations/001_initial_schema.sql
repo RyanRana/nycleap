@@ -5,7 +5,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE TABLE public.user_profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT UNIQUE NOT NULL,
-  user_type TEXT NOT NULL CHECK (user_type IN ('regular', 'corporate', 'guest')),
+  user_type TEXT NOT NULL CHECK (user_type IN ('regular', 'corporate', 'guest', 'community_leader')),
   company_domain TEXT, -- For corporate users (e.g., 'microsoft.com')
   company_logo_url TEXT, -- For corporate users
   zipcode TEXT, -- Where user lives (can only be one)

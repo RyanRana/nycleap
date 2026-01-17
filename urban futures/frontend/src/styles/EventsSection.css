@@ -1,0 +1,464 @@
+.events-section {
+  margin: 0;
+  padding: 0;
+  background: #ffffff;
+  border-radius: 0;
+}
+
+/* When inside sidebar, use sidebar-specific styling */
+.sidebar .events-section {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #fff9f0;
+  border-radius: 8px;
+}
+
+.sidebar .events-section h3 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+.events-section.landing-events-section {
+  padding: 0;
+  margin: 0;
+  background: #ffffff;
+}
+
+/* Landing page events section - constrained width */
+.events-section:has(.events-grid-landing) {
+  padding: 6rem 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: transparent;
+}
+
+/* Landing page title - uses AboutSection's subsection-title class */
+.events-section h2.subsection-title {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+  margin: 0 0 3rem 0;
+}
+
+/* Sidebar section header */
+.events-section .section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.events-section h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.1rem;
+}
+
+.events-count {
+  background: #14532d;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.loading-text {
+  text-align: center;
+  color: #888;
+  padding: 1rem;
+  font-size: 0.9rem;
+}
+
+.events-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.event-item {
+  background: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #e5e7eb;
+}
+
+.event-item:hover {
+  box-shadow: 0 4px 12px rgba(20, 83, 45, 0.2);
+  border-color: #14532d;
+}
+
+.event-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.event-header:hover {
+  background: #f8f9fa;
+}
+
+.event-main-info {
+  flex: 1;
+}
+
+.event-type-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.event-type-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: white;
+  text-transform: uppercase;
+}
+
+/* Event type colors - green theme */
+.event-item .event-type-badge[style*="event"] {
+  background: #14532d !important;
+}
+
+.event-item .event-type-badge[style*="news"] {
+  background: #166534 !important;
+}
+
+.event-item .event-type-badge[style*="information"] {
+  background: #15803d !important;
+}
+
+.event-item .event-type-badge[style*="announcement"] {
+  background: #16a34a !important;
+}
+
+.event-org {
+  color: #888;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.event-main-info h4 {
+  margin: 0 0 0.25rem 0;
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.3;
+}
+
+.event-date-preview {
+  margin: 0.5rem 0 0 0;
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.event-toggle {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #14532d;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.event-toggle:hover {
+  background: #f0f0f0;
+}
+
+.event-details {
+  padding: 0 1rem 1rem 1rem;
+  border-top: 1px solid #e0e0e0;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    max-height: 0;
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+  }
+}
+
+.event-image {
+  margin: 1rem 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.event-image img {
+  width: 100%;
+  max-height: 300px;
+  object-fit: cover;
+}
+
+.event-description {
+  color: #333;
+  line-height: 1.6;
+  margin: 1rem 0;
+  font-size: 0.95rem;
+}
+
+.event-location {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0.75rem 0;
+  padding: 0.5rem;
+  background: #f8f9ff;
+  border-radius: 6px;
+}
+
+.event-link {
+  display: inline-block;
+  margin: 1rem 0;
+  padding: 0.6rem 1.2rem;
+  background: #14532d;
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(20, 83, 45, 0.2);
+  font-family: 'Times New Roman', Times, serif;
+}
+
+.event-link:hover {
+  background: #166534;
+  box-shadow: 0 4px 12px rgba(20, 83, 45, 0.3);
+  transform: translateY(-1px);
+}
+
+.event-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f0f0f0;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.event-posted-by {
+  font-style: italic;
+}
+
+.event-posted-date {
+  color: #999;
+}
+
+.events-section {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+/* When inside sidebar, use sidebar-specific styling */
+.sidebar .events-section {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  background: #fff9f0;
+  border-radius: 8px;
+}
+
+.sidebar .events-section h3 {
+  font-size: 1.1rem;
+  margin-bottom: 1rem;
+}
+
+/* When inside about-subsection, no background/border */
+.about-subsection .events-section {
+  padding: 0;
+  margin: 0;
+  background: transparent;
+}
+
+/* Landing page event cards - matching green initiatives style exactly */
+.events-grid-landing {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.event-card-landing {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 2px 4px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+}
+
+.event-card-landing:hover {
+  border-color: #22c55e;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2), 0 8px 16px rgba(0, 0, 0, 0.1);
+  transform: translateY(-8px);
+}
+
+.event-image-wrapper-landing {
+  position: relative;
+  width: 100%;
+  height: 250px;
+  overflow: hidden;
+  background: #f3f4f6;
+}
+
+.event-image-placeholder-bg {
+  width: 100%;
+  height: 100%;
+  background: #f3f4f6;
+}
+
+.event-image-landing {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.event-card-landing:hover .event-image-landing {
+  transform: scale(1.05);
+}
+
+.event-type-badge-landing {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.event-type-badge-landing svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  color: #15803d;
+}
+
+.event-content-landing {
+  padding: 1.5rem;
+}
+
+.event-header-row-landing {
+  margin-bottom: 1rem;
+}
+
+.event-author-landing {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.event-author-icon-landing {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  flex-shrink: 0;
+}
+
+.event-author-info-landing {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+}
+
+.event-author-name-landing {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 1rem;
+  font-weight: normal;
+  color: #1a1a1a;
+}
+
+.event-date-landing {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 0.85rem;
+  color: #718096;
+}
+
+.event-caption-landing {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #2d3748;
+  margin: 0 0 0.75rem 0;
+}
+
+.event-location-landing {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 0.9rem;
+  color: #718096;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .events-grid-landing {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sidebar styles */
+@media (max-width: 768px) {
+  .sidebar .events-section {
+    padding: 0.75rem;
+  }
+
+  .event-header {
+    padding: 0.75rem;
+  }
+
+  .event-details {
+    padding: 0 0.75rem 0.75rem 0.75rem;
+  }
+
+  .event-type-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .event-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .events-grid-landing {
+    grid-template-columns: 1fr;
+  }
+}

@@ -5,6 +5,10 @@ import { supabase, GreenInitiative } from '../lib/supabase';
 import GreenInitiativeModal from './GreenInitiativeModal';
 import '../styles/GreenInitiativesSection.css';
 
+// Cache for green initiatives
+const initiativesCache = new Map<string, { data: GreenInitiative[]; timestamp: number }>();
+const CACHE_TTL = 2 * 60 * 1000; // 2 minutes
+
 interface GreenInitiativesSectionProps {
   zipcode: string;
   h3Cell?: string;
@@ -48,6 +52,15 @@ const GreenInitiativesSection: React.FC<GreenInitiativesSectionProps> = ({ zipco
     try {
       setLoading(true);
       
+      // Check cache first
+      const cached = initiativesCache.get(zipcode);
+      if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+        console.log('📦 Using cached initiatives data');
+        setInitiatives(cached.data);
+        setLoading(false);
+        return;
+      }
+      
       const { data, error } = await supabase
         .from('green_initiatives')
         .select(`
@@ -59,7 +72,13 @@ const GreenInitiativesSection: React.FC<GreenInitiativesSectionProps> = ({ zipco
 
       if (error) throw error;
 
-      setInitiatives(data || []);
+      const initiativesData = data || [];
+      
+      // Cache the result
+      initiativesCache.set(zipcode, { data: initiativesData, timestamp: Date.now() });
+      console.log('💾 Cached initiatives data');
+      
+      setInitiatives(initiativesData);
     } catch (error) {
       console.error('Error loading initiatives:', error);
     } finally {

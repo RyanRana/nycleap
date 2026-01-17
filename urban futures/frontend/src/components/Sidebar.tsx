@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import ReviewSection from './ReviewSection';
 import GreenInitiativesSection from './GreenInitiativesSection';
+import OrganizationsSection from './OrganizationsSection';
+import EventsSection from './EventsSection';
 import '../styles/Sidebar.css';
 
 // SVG Icons
@@ -112,28 +114,49 @@ const buildShareUrl = (h3Data: H3Data) => {
   return `${base}/?${params.toString()}`;
 };
 
+// Cache for prediction API calls
+const predictionCache = new Map<string, { data: any; timestamp: number }>();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 const Sidebar: React.FC<SidebarProps> = ({ h3Data, loading, onClose }) => {
   const [expandedExplanations, setExpandedExplanations] = useState<Set<string>>(new Set());
   const [prediction, setPrediction] = useState<any>(null);
   const [predictionLoading, setPredictionLoading] = useState(false);
   const [predictionYears, setPredictionYears] = useState(10);
   const [treesToPlant, setTreesToPlant] = useState(0); // New trees to plant now
+  const [availablePlantingCount, setAvailablePlantingCount] = useState<number | null>(null);
   
   // Fetch prediction when h3Data, years, or treesToPlant changes
-  // Use debouncing to avoid too many API calls
+  // Use debouncing to avoid too many API calls + caching
   useEffect(() => {
     if (!h3Data?.h3_cell) return;
     
-    setPredictionLoading(true);
     const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:3001';
     const currentTreeCount = (h3Data.tree_count || 0);
     const totalTreeCount = currentTreeCount + treesToPlant;
+    
+    // Create cache key
+    const cacheKey = `${h3Data.h3_cell}-${predictionYears}-${totalTreeCount}`;
+    
+    // Check cache first
+    const cached = predictionCache.get(cacheKey);
+    if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
+      console.log('📦 Using cached prediction data');
+      setPrediction(cached.data);
+      setPredictionLoading(false);
+      return;
+    }
+    
+    setPredictionLoading(true);
     
     // Debounce: wait 300ms after user stops changing sliders
     const timeoutId = setTimeout(() => {
       fetch(`${apiUrl}/predict?h3_cell=${h3Data.h3_cell}&years=${predictionYears}&tree_count=${totalTreeCount}`)
         .then(res => res.json())
         .then(data => {
+          // Cache the result
+          predictionCache.set(cacheKey, { data, timestamp: Date.now() });
+          console.log('💾 Cached prediction data');
           setPrediction(data);
           setPredictionLoading(false);
         })
@@ -145,6 +168,43 @@ const Sidebar: React.FC<SidebarProps> = ({ h3Data, loading, onClose }) => {
     
     return () => clearTimeout(timeoutId);
   }, [h3Data?.h3_cell, predictionYears, treesToPlant]);
+
+  // Load available planting count when cell changes
+  useEffect(() => {
+    const loadPlantingCount = async () => {
+      if (!h3Data?.h3_cell) return;
+      
+      try {
+        // Load tree planting coordinates and count those in this cell
+        const response = await fetch('/data/processed/available_tree_planting_coordinates.json');
+        if (response.ok) {
+          const data = await response.json();
+          const coords = data.coordinates || [];
+          
+          // Use h3-js to count coordinates in this cell
+          const { latLngToCell } = await import('h3-js');
+          const resolution = 9;
+          const cellId = h3Data.h3_cell;
+          
+          const count = coords.filter((coord: any) => {
+            try {
+              const coordCellId = latLngToCell(coord.latitude, coord.longitude, resolution);
+              return coordCellId === cellId;
+            } catch (e) {
+              return false;
+            }
+          }).length;
+          
+          setAvailablePlantingCount(count);
+          console.log(`📍 Found ${count} available planting locations in cell`);
+        }
+      } catch (error) {
+        console.error('Error loading planting count:', error);
+      }
+    };
+    
+    loadPlantingCount();
+  }, [h3Data?.h3_cell]);
   
 
   const toggleExplanation = (metricId: string) => {
@@ -273,6 +333,16 @@ const Sidebar: React.FC<SidebarProps> = ({ h3Data, loading, onClose }) => {
           <GreenInitiativesSection zipcode={h3Data.features.zipcode || ''} h3Cell={h3Data.h3_cell} />
         )}
 
+        {/* Organizations Section */}
+        {h3Data && h3Data.features && h3Data.features.zipcode && (
+          <OrganizationsSection zipcode={h3Data.features.zipcode} />
+        )}
+
+        {/* Events Section */}
+        {h3Data && h3Data.features && h3Data.features.zipcode && (
+          <EventsSection zipcode={h3Data.features.zipcode} limit={5} />
+        )}
+
         {/* EJ Score and Priority Score on same line */}
         <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem' }}>
           <div className="metric-card" style={{ flex: '1', minWidth: 0 }}>
@@ -286,12 +356,6 @@ const Sidebar: React.FC<SidebarProps> = ({ h3Data, loading, onClose }) => {
                 style={{ width: `${(h3Data.ej_score ?? 0) * 100}%` }}
               />
             </div>
-            {(h3Data.ej_score ?? 0) > 0.6 && (
-              <div className="ej-highlight" style={{ marginTop: '0.75rem' }}>
-                <AlertIcon />
-                <span>High EJ Priority Area</span>
-              </div>
-            )}
           </div>
 
           <div className="metric-card" style={{ flex: '1', minWidth: 0 }}>
@@ -408,16 +472,20 @@ const Sidebar: React.FC<SidebarProps> = ({ h3Data, loading, onClose }) => {
                   </div>
                   <div className="impact-content">
                     <div className="impact-label">Temperature Change Over Time</div>
-                    <div className="impact-value" style={{ color: (prediction.summary.avg_temperature_reduction_f || 0) > 0 ? '#ff6b6b' : '#2d8659' }}>
+                    <div className="impact-value" style={{ color: (-(prediction.summary.avg_temperature_reduction_f || 0)) < 0 ? '#2d8659' : '#ff6b6b' }}>
                       {(-(prediction.summary.avg_temperature_reduction_f || 0)).toFixed(2)}°F
                     </div>
                     <div style={{ fontSize: '0.85rem', color: '#888', marginTop: '0.25rem' }}>
                       Average over {predictionYears} years
                     </div>
                     <div style={{ fontSize: '0.75rem', color: '#666', marginTop: '0.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                      <span>Now: {(-(prediction.current_state.temperature_reduction_f || 0)).toFixed(2)}°F</span>
+                      <span style={{ color: (-(prediction.current_state.temperature_reduction_f || 0)) < 0 ? '#2d8659' : '#ff6b6b' }}>
+                        Now: {(-(prediction.current_state.temperature_reduction_f || 0)).toFixed(2)}°F
+                      </span>
                       <span>→</span>
-                      <span>In {predictionYears} years: {(-(prediction.yearly_projections[prediction.yearly_projections.length - 1]?.temperature_reduction_f || 0)).toFixed(2)}°F</span>
+                      <span style={{ color: (-(prediction.yearly_projections[prediction.yearly_projections.length - 1]?.temperature_reduction_f || 0)) < 0 ? '#2d8659' : '#ff6b6b' }}>
+                        In {predictionYears} years: {(-(prediction.yearly_projections[prediction.yearly_projections.length - 1]?.temperature_reduction_f || 0)).toFixed(2)}°F
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -529,7 +597,68 @@ const Sidebar: React.FC<SidebarProps> = ({ h3Data, loading, onClose }) => {
           )}
         </div>
 
-        <div className="zip-divider"></div>
+        {/* Street Trees Section */}
+        <div className="impact-section planting-availability-section">
+          <div className="section-header">
+            <h3>If the government helped us...</h3>
+            <button
+              className="explanation-toggle"
+              onClick={() => toggleExplanation('planting-availability')}
+              aria-label="Toggle section"
+            >
+              {expandedExplanations.has('planting-availability') ? '−' : '+'}
+            </button>
+          </div>
+          {expandedExplanations.has('planting-availability') && (
+            <>
+              <div className="section-explanation">
+                <div className="explanation-text">
+                  <strong>Tree planting locations</strong> calculated following{' '}
+                  <a 
+                    href="https://www.nycgovparks.org/permits/trees/standards.pdf?utm_source" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="guidelines-link"
+                  >
+                    NYC Tree Planting Guidelines
+                  </a>
+                  . Available locations meet all clearance requirements for hydrants, signs, intersections, and sidewalk width.
+                </div>
+              </div>
+
+              <div className="planting-summary-card">
+                <div className="planting-legend">
+                  <div className="legend-item">
+                    <span className="legend-dot existing"></span>
+                    <span className="legend-label">Existing Trees (2015 Census)</span>
+                    <span className="legend-count">
+                      {(h3Data.features.tree_count || h3Data.tree_count || 0).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="legend-item">
+                    <span className="legend-dot available"></span>
+                    <span className="legend-label">
+                      Law abiding trees{' '}
+                      <a 
+                        href="https://www.nycgovparks.org/permits/trees/standards.pdf?utm_source" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="guidelines-link inline-link"
+                      >
+                        (rules)
+                      </a>
+                    </span>
+                    <span className="legend-count">
+                      {availablePlantingCount !== null ? availablePlantingCount.toLocaleString() : '...'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div className="zip-divider planting-section-divider"></div>
 
         {/* Shareable artifact section */}
         <div className="share-section">

@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import AboutSection from './AboutSection';
 import StatisticsSection from './StatisticsSection';
+import EventsSection from './EventsSection';
 import { useAuth } from '../contexts/AuthContext';
 import '../styles/LandingPage.css';
 
 interface LandingPageProps {
-  onNavigate: (page: 'map' | 'leaderboard') => void;
+  onNavigate: (page: 'map' | 'leaderboard' | 'community-leader-dashboard') => void;
 }
 
 const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
-  const { user, signOut } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const [typedText, setTypedText] = useState('');
   const [showCursor, setShowCursor] = useState(true);
   const fullText = "What's my city's climate going to be for my kids?";
@@ -64,6 +65,9 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('map'); }} className="nav-link">Map</a>
             <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('leaderboard'); }} className="nav-link">Leaderboard</a>
             <a href="#" onClick={(e) => { e.preventDefault(); scrollToAbout(); }} className="nav-link">Mission</a>
+            {user && profile?.user_type === 'community_leader' && (
+              <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('community-leader-dashboard'); }} className="nav-link">Dashboard</a>
+            )}
             {user && (
               <button onClick={handleLogout} className="nav-link logout-btn">
                 Logout
@@ -105,7 +109,7 @@ const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
 
       {/* Mission Section */}
       <div id="about-section">
-        <AboutSection onNavigate={onNavigate} />
+        <AboutSection onNavigate={onNavigate} showEvents={true} />
       </div>
     </div>
   );

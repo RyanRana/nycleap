@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, GreenInitiative } from '../lib/supabase';
+import EventsSection from './EventsSection';
 import '../styles/AboutSection.css';
 
 interface AboutSectionProps {
   onNavigate?: (page: 'map') => void;
+  showEvents?: boolean;
 }
 
 const INITIATIVE_TYPES = [
@@ -13,7 +15,7 @@ const INITIATIVE_TYPES = [
   { value: 'general', label: '♻️ General Green Initiative', icon: '♻️' },
 ];
 
-const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate }) => {
+const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate, showEvents = false }) => {
   const [showMore, setShowMore] = useState(false);
   const [recentInitiatives, setRecentInitiatives] = useState<GreenInitiative[]>([]);
   const [loadingInitiatives, setLoadingInitiatives] = useState(true);
@@ -179,10 +181,15 @@ const AboutSection: React.FC<AboutSectionProps> = ({ onNavigate }) => {
         </div>
       </section>
 
+      {/* Community Events & News */}
+      {showEvents && (
+        <EventsSection showAll={true} limit={20} />
+      )}
+
       {/* Recent Green Initiatives */}
       <section className="about-subsection recent-initiatives">
         <div className="subsection-content">
-          <h2 className="subsection-title">Recent Green Initiatives</h2>
+          <h2 className="subsection-title">Latest from the community</h2>
           {loadingInitiatives ? (
             <div className="initiatives-loading">Loading initiatives...</div>
           ) : recentInitiatives.length === 0 ? (

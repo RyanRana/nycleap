@@ -5,12 +5,16 @@ import { H3Service } from './services/h3Service';
 import { SimulationService } from './services/simulationService';
 import { CongressionalService } from './services/congressionalService';
 import { PredictionService } from './services/predictionService';
+import communityLeaderRoutes from './api/communityLeaderRoutes';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(cors());
 app.use(express.json());
+
+// Community leader routes
+app.use('/api/community-leaders', communityLeaderRoutes);
 
 const h3Service = new H3Service();
 const simulationService = new SimulationService();

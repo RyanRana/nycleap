@@ -9,12 +9,71 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 export interface UserProfile {
   id: string;
   email: string;
-  user_type: 'regular' | 'corporate' | 'guest';
+  user_type: 'regular' | 'corporate' | 'guest' | 'community_leader';
   company_domain?: string;
   company_logo_url?: string;
   zipcode?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface Organization {
+  id: string;
+  name: string;
+  description?: string;
+  website_url?: string;
+  twitter_url?: string;
+  instagram_url?: string;
+  facebook_url?: string;
+  created_by?: string;
+  is_verified: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CommunityLeader {
+  id: string;
+  organization_id: string;
+  role?: string;
+  bio?: string;
+  profile_image_url?: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+  organization?: Organization;
+  user_profile?: UserProfile;
+}
+
+export interface CommunityLeaderZipcode {
+  id: string;
+  community_leader_id: string;
+  zipcode: string;
+  created_at: string;
+}
+
+export interface Event {
+  id: string;
+  community_leader_id: string;
+  organization_id: string;
+  title: string;
+  description: string;
+  event_type: 'event' | 'news' | 'information' | 'announcement';
+  event_date?: string;
+  location?: string;
+  image_url?: string;
+  external_link?: string;
+  is_published: boolean;
+  created_at: string;
+  updated_at: string;
+  organization?: Organization;
+  community_leader?: CommunityLeader;
+}
+
+export interface EventZipcode {
+  id: string;
+  event_id: string;
+  zipcode: string;
+  created_at: string;
 }
 
 export interface Review {

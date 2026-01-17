@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
+import { latLngToCell } from 'h3-js';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import '../styles/MapComponent.css';
 
@@ -400,9 +401,9 @@ const addH3GradientLayer = (mapInstance: mapboxgl.Map, onH3Click: (h3Cell: strin
               visibility: 'visible'
             },
             paint: {
-              'line-color': '#FFD700',
-              'line-width': 5,
-              'line-opacity': 1.0
+              'line-color': 'transparent',
+              'line-width': 0,
+              'line-opacity': 0
             }
           }, 'h3-layer');
           console.log('✅ Created h3-highlight layer structure');
@@ -529,9 +530,9 @@ const updateH3Highlight = (mapInstance: mapboxgl.Map, selectedH3: any, allH3Data
               visibility: 'visible'
             },
             paint: {
-              'line-color': '#FFD700', // Bright gold/yellow
-              'line-width': 5, // Make it thicker for visibility
-              'line-opacity': 1.0 // Full opacity
+              'line-color': 'transparent', // No visible border
+              'line-width': 0, // No width
+              'line-opacity': 0 // Transparent
             }
           }, 'h3-layer'); // Add after h3-layer so it renders on top
           console.log('✅ h3-highlight layer added successfully');
@@ -569,9 +570,9 @@ const updateH3Highlight = (mapInstance: mapboxgl.Map, selectedH3: any, allH3Data
               visibility: 'visible'
             },
             paint: {
-              'line-color': '#FFD700',
-              'line-width': 5,
-              'line-opacity': 1.0
+              'line-color': 'transparent',
+              'line-width': 0,
+              'line-opacity': 0
             }
           });
           console.log('✅ h3-highlight layer added (without beforeId)');
@@ -597,8 +598,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ onH3Click, selectedH3 }) =>
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
-  const [viewMode, setViewMode] = useState<'trees' | 'heat'>('trees'); // Toggle between trees (green) and heat (red)
+  const viewMode = 'trees'; // Always show trees (priority) mode
   const mapStyle = 'mapbox://styles/mapbox/light-v11'; // Fixed light style for better hexagon visibility
+  const [treePlantingCoords, setTreePlantingCoords] = useState<any[]>([]);
+  const [existingTreeCoords, setExistingTreeCoords] = useState<any[]>([]);
 
   // Helper function to safely get a source (prevents errors when style isn't loaded)
   const safeGetSource = (mapInstance: mapboxgl.Map, sourceId: string): any => {
@@ -1682,154 +1685,250 @@ const MapComponent: React.FC<MapComponentProps> = ({ onH3Click, selectedH3 }) =>
     if (mapLoaded && map.current) {
       const layer = safeGetLayer(map.current, 'h3-layer');
       if (layer) {
-        // Build the color expression based on view mode
-        let fillColorExpression: any;
-        
-        if (viewMode === 'trees') {
-          // Green gradient for tree priority
-          fillColorExpression = [
-            'interpolate',
-            ['linear'],
-            ['coalesce', ['get', 'priority_final'], 0],
-            0, '#e8f5e9',      // Very light green
-            0.1, '#c8e6c9',
-            0.2, '#a5d6a7',
-            0.3, '#81c784',
-            0.4, '#66bb6a',
-            0.5, '#4caf50',
-            0.6, '#388e3c',
-            0.7, '#2e7d32',
-            0.8, '#1b5e20',
-            1.0, '#0d4f1c'     // Darkest green
-          ];
-        } else {
-          // Red gradient for heat index
-          // Use thermal_value which matches the thermal points calculation
-          // Note: thermal_value is already normalized 0-1, so we use it directly
-          fillColorExpression = [
-            'interpolate',
-            ['linear'],
-            [
-              'coalesce',
-              ['get', 'thermal_value'], // Use the same thermal value as thermal points (0-1 range)
-              ['get', 'thermal_proxy_normalized'], // Fallback to thermal proxy
-              ['get', 'earth2_temp_c'],
-              ['get', 'heat_vulnerability_index'],
-              ['get', 'heat_score'],
-              0.5 // Final fallback
-            ],
-            0, '#fff5f5',      // Very light pink/red - cool
-            0.1, '#ffe5e5',    // Light pink
-            0.2, '#ffcccc',    // Light-medium pink
-            0.3, '#ffb3b3',    // Medium-light pink
-            0.4, '#ff9999',    // Medium pink
-            0.5, '#ff8080',    // Medium-dark pink
-            0.6, '#ff6666',    // Dark pink
-            0.7, '#ff4d4d',    // Dark red-pink
-            0.8, '#ff3333',    // Dark red
-            0.9, '#cc0000',    // Darker red
-            1.0, '#990000'     // Darkest red - hottest
-          ];
-        }
+        // Green gradient for tree priority
+        const fillColorExpression: any = [
+          'interpolate',
+          ['linear'],
+          ['coalesce', ['get', 'priority_final'], 0],
+          0, '#e8f5e9',      // Very light green
+          0.1, '#c8e6c9',
+          0.2, '#a5d6a7',
+          0.3, '#81c784',
+          0.4, '#66bb6a',
+          0.5, '#4caf50',
+          0.6, '#388e3c',
+          0.7, '#2e7d32',
+          0.8, '#1b5e20',
+          1.0, '#0d4f1c'     // Darkest green
+        ];
         
         map.current.setPaintProperty('h3-layer', 'fill-color', fillColorExpression);
         
         // Force a repaint to ensure colors update
         map.current.triggerRepaint();
         
-        console.log(`📊 H3 layer updated to ${viewMode} mode`);
-        if (viewMode === 'heat') {
-          console.log(`   Using thermal_value for heat index colors`);
-          console.log(`   Color expression:`, fillColorExpression);
-          
-          // Verify thermal values in source
-          try {
-            const source = safeGetSource(map.current, 'h3-cells');
-            if (source) {
-              const sourceData = (source as any)._data;
-              if (sourceData?.features) {
-                const thermalValues = sourceData.features
-                  .slice(0, 10)
-                  .map((f: any) => f.properties?.thermal_value)
-                  .filter((v: any) => v != null);
-                console.log(`   Sample thermal_value from source:`, thermalValues);
-                
-                const allThermalVals = sourceData.features
-                  .map((f: any) => f.properties?.thermal_value)
-                  .filter((v: any) => v != null && !isNaN(v));
-                if (allThermalVals.length > 0) {
-                  const minVal = Math.min(...allThermalVals);
-                  const maxVal = Math.max(...allThermalVals);
-                  const avgVal = allThermalVals.reduce((a: number, b: number) => a + b, 0) / allThermalVals.length;
-                  console.log(`   Source thermal_value stats:`);
-                  console.log(`      Range: min=${minVal.toFixed(3)}, max=${maxVal.toFixed(3)}`);
-                  console.log(`      Average: ${avgVal.toFixed(3)}, count=${allThermalVals.length}`);
-                  console.log(`      Values < 0.3: ${allThermalVals.filter((v: number) => v < 0.3).length}`);
-                  console.log(`      Values 0.3-0.6: ${allThermalVals.filter((v: number) => v >= 0.3 && v < 0.6).length}`);
-                  console.log(`      Values 0.6-0.9: ${allThermalVals.filter((v: number) => v >= 0.6 && v < 0.9).length}`);
-                  console.log(`      Values >= 0.9: ${allThermalVals.filter((v: number) => v >= 0.9).length}`);
-                }
-              }
-            }
-          } catch (e) {
-            console.warn('Could not verify thermal values in source:', e);
-          }
-        }
+        console.log(`📊 H3 layer updated to trees (priority) mode`);
         
-        // Hide thermal overlay when in heat mode (heat is shown in cells)
+        // Hide thermal overlay (heat shown in cells, not as overlay)
         const thermalLayer = safeGetLayer(map.current, 'thermal-heat-overlay');
         if (thermalLayer) {
           map.current.setLayoutProperty(
             'thermal-heat-overlay',
             'visibility',
-            viewMode === 'heat' ? 'none' : 'none' // Always hide - heat shown in cells
+            'none' // Always hide - heat shown in cells
           );
         }
       }
     }
-  }, [viewMode, mapLoaded]);
+  }, [mapLoaded]);
+
+  // Load tree planting coordinates and existing trees on mount
+  useEffect(() => {
+    const loadTreeData = async () => {
+      try {
+        // Load tree planting coordinates
+        const plantingResponse = await fetch('/data/processed/available_tree_planting_coordinates.json');
+        if (plantingResponse.ok) {
+          const data = await plantingResponse.json();
+          setTreePlantingCoords(data.coordinates || []);
+          console.log(`✅ Loaded ${data.coordinates?.length || 0} tree planting coordinates`);
+        }
+
+        // Load existing trees
+        const existingResponse = await fetch('/data/processed/existing_trees_coordinates.json');
+        if (existingResponse.ok) {
+          const data = await existingResponse.json();
+          setExistingTreeCoords(data.coordinates || []);
+          console.log(`✅ Loaded ${data.coordinates?.length || 0} existing trees`);
+        }
+      } catch (error) {
+        console.error('Error loading tree data:', error);
+      }
+    };
+    loadTreeData();
+  }, []);
+
+  // Handle selected H3 cell: zoom, transparency, and show tree dots
+  useEffect(() => {
+    if (!mapLoaded || !map.current || !allH3Data) return;
+
+    const mapInstance = map.current;
+
+    if (selectedH3) {
+      const cellId = selectedH3.h3_cell || selectedH3;
+      
+      // Find the selected feature
+      const selectedFeature = allH3Data.features.find(
+        (f: any) => f.properties?.h3_cell === cellId
+      );
+
+      if (selectedFeature && selectedFeature.geometry) {
+        // 1. Zoom to the selected cell
+        const bounds = new mapboxgl.LngLatBounds();
+        const coords = selectedFeature.geometry.coordinates[0];
+        coords.forEach((coord: [number, number]) => {
+          bounds.extend(coord);
+        });
+        // Smooth zoom animation to selected cell with animated zoom in
+        mapInstance.fitBounds(bounds, {
+          padding: 100,
+          duration: 1200,
+          maxZoom: 16,
+          essential: true
+        });
+
+        // 2. Make selected cell transparent
+        const layer = safeGetLayer(mapInstance, 'h3-layer');
+        if (layer) {
+          mapInstance.setPaintProperty('h3-layer', 'fill-opacity', [
+            'case',
+            ['==', ['get', 'h3_cell'], cellId],
+            0.15, // Transparent when selected
+            0.85  // Normal opacity for others
+          ]);
+        }
+
+        // 3. Filter and show tree planting dots for this cell
+        if (treePlantingCoords.length > 0) {
+          // Filter coordinates that belong to this H3 cell
+          const resolution = 9; // H3 resolution used in the data
+          const cellCoords = treePlantingCoords.filter((coord: any) => {
+            try {
+              const coordCellId = latLngToCell(coord.latitude, coord.longitude, resolution);
+              return coordCellId === cellId;
+            } catch (e) {
+              return false;
+            }
+          });
+
+          console.log(`📍 Found ${cellCoords.length} tree planting locations in cell ${cellId}`);
+
+          // Create GeoJSON for the dots
+          const dotsGeoJSON = {
+            type: 'FeatureCollection',
+            features: cellCoords.map((coord: any) => ({
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [coord.longitude, coord.latitude]
+              },
+              properties: {}
+            }))
+          };
+
+          // Add or update source
+          const source = mapInstance.getSource('tree-planting-dots') as mapboxgl.GeoJSONSource;
+          if (source) {
+            source.setData(dotsGeoJSON as any);
+          } else {
+            mapInstance.addSource('tree-planting-dots', {
+              type: 'geojson',
+              data: dotsGeoJSON as any
+            });
+          }
+
+          // Add layer if it doesn't exist
+          if (!safeGetLayer(mapInstance, 'tree-planting-dots')) {
+            mapInstance.addLayer({
+              id: 'tree-planting-dots',
+              type: 'circle',
+              source: 'tree-planting-dots',
+              paint: {
+                'circle-radius': 4,
+                'circle-color': '#22c55e',
+                'circle-stroke-width': 1,
+                'circle-stroke-color': '#ffffff',
+                'circle-opacity': 0.8
+              }
+            });
+          }
+        }
+
+        // 4. Filter and show existing trees (red dots) for this cell
+        if (existingTreeCoords.length > 0) {
+          const resolution = 9;
+          const existingCellCoords = existingTreeCoords.filter((coord: any) => {
+            try {
+              const coordCellId = latLngToCell(coord.latitude, coord.longitude, resolution);
+              return coordCellId === cellId;
+            } catch (e) {
+              return false;
+            }
+          });
+
+          console.log(`🌳 Found ${existingCellCoords.length} existing trees in cell ${cellId}`);
+
+          // Create GeoJSON for existing trees
+          const existingTreesGeoJSON = {
+            type: 'FeatureCollection',
+            features: existingCellCoords.map((coord: any) => ({
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: [coord.longitude, coord.latitude]
+              },
+              properties: {}
+            }))
+          };
+
+          // Add or update source
+          const existingSource = mapInstance.getSource('existing-trees-dots') as mapboxgl.GeoJSONSource;
+          if (existingSource) {
+            existingSource.setData(existingTreesGeoJSON as any);
+          } else {
+            mapInstance.addSource('existing-trees-dots', {
+              type: 'geojson',
+              data: existingTreesGeoJSON as any
+            });
+          }
+
+          // Add layer if it doesn't exist (render below planting dots)
+          if (!safeGetLayer(mapInstance, 'existing-trees-dots')) {
+            mapInstance.addLayer({
+              id: 'existing-trees-dots',
+              type: 'circle',
+              source: 'existing-trees-dots',
+              paint: {
+                'circle-radius': 3,
+                'circle-color': '#ef4444', // Red for existing trees
+                'circle-stroke-width': 1,
+                'circle-stroke-color': '#ffffff',
+                'circle-opacity': 0.7
+              }
+            }, 'tree-planting-dots'); // Add before planting dots so green appears on top
+          }
+        }
+      }
+    } else {
+      // No cell selected: reset opacity and remove dots
+      const layer = safeGetLayer(mapInstance, 'h3-layer');
+      if (layer) {
+        mapInstance.setPaintProperty('h3-layer', 'fill-opacity', 0.85);
+      }
+
+      // Remove tree planting dots
+      const source = mapInstance.getSource('tree-planting-dots') as mapboxgl.GeoJSONSource;
+      if (source) {
+        source.setData({
+          type: 'FeatureCollection',
+          features: []
+        } as any);
+      }
+
+      // Remove existing trees dots
+      const existingSource = mapInstance.getSource('existing-trees-dots') as mapboxgl.GeoJSONSource;
+      if (existingSource) {
+        existingSource.setData({
+          type: 'FeatureCollection',
+          features: []
+        } as any);
+      }
+    }
+  }, [selectedH3, mapLoaded, allH3Data, treePlantingCoords, existingTreeCoords]);
 
   return (
     <div className="map-container">
       <div ref={mapContainer} className="map" />
-      {/* View mode toggle */}
-      <div style={{
-        position: 'absolute',
-        top: '10px',
-        right: '10px',
-        background: 'rgba(255, 255, 255, 0.9)',
-        padding: '0.75rem',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.5rem'
-      }}>
-        <div style={{ fontSize: '0.85rem', fontWeight: 'bold', marginBottom: '0.25rem' }}>View Mode:</div>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem' }}>
-          <input
-            type="radio"
-            name="viewMode"
-            value="trees"
-            checked={viewMode === 'trees'}
-            onChange={(e) => setViewMode('trees')}
-            style={{ cursor: 'pointer' }}
-          />
-          <span>🟢 Trees (Priority)</span>
-        </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.85rem' }}>
-          <input
-            type="radio"
-            name="viewMode"
-            value="heat"
-            checked={viewMode === 'heat'}
-            onChange={(e) => setViewMode('heat')}
-            style={{ cursor: 'pointer' }}
-          />
-          <span>🌡️ Heat Index</span>
-        </label>
-      </div>
     </div>
   );
 };

@@ -46,18 +46,33 @@ else:
         'baseline_temperature_f': 40.1
     }
 
-# Try to load ML model first, fallback to rule-based
+# Try to load ML models first, fallback to rule-based
 try:
     from ml_tree_growth_predictor import MLTreeGrowthPredictor
     print("Loading ML-based tree growth predictor...")
     predictor = MLTreeGrowthPredictor()
-    print("✅ ML model loaded and ready!")
+    print("✅ ML tree growth model loaded!")
 except Exception as e:
-    print(f"⚠️  Could not load ML model: {e}")
+    print(f"⚠️  Could not load ML tree growth model: {e}")
     print("   Falling back to rule-based predictor...")
     from tree_growth_predictor import TreeGrowthPredictor
     predictor = TreeGrowthPredictor()
-    print("✅ Rule-based model loaded!")
+    print("✅ Rule-based tree growth model loaded!")
+
+# Try to load ML heat impact model for accurate temperature predictions
+heat_impact_model = None
+heat_model_path = MODELS_DIR / "heat_impact_ml_model.pkl"
+try:
+    from train_heat_impact_model import HeatImpactMLModel
+    if heat_model_path.exists():
+        heat_impact_model = HeatImpactMLModel.load(heat_model_path)
+        print("✅ ML heat impact model loaded for accurate temperature predictions!")
+    else:
+        print("⚠️  Heat impact ML model not found. Train it with: python train_heat_impact_model.py")
+        print("   Using fallback temperature calculations...")
+except Exception as e:
+    print(f"⚠️  Could not load heat impact ML model: {e}")
+    print("   Using fallback temperature calculations...")
 
 class PredictionHandler(BaseHTTPRequestHandler):
     """HTTP handler for prediction requests."""
@@ -129,68 +144,55 @@ class PredictionHandler(BaseHTTPRequestHandler):
                         new_tree_survival = 0.98 ** year  # New trees have better survival
                         projected_tree_count += new_trees * new_tree_survival
                     
-                    # Calculate impacts at current DBH (using size scaling)
+                    # Calculate impacts at current DBH
                     size_factor = (current_dbh / 20.0) ** 1.5
-                    co2_annual = 21.77 * size_factor * projected_tree_count
                     
-                    # Temperature: calculate based on tree count and mortality
-                    # Key: If 0 new trees, area gets HOTTER (negative change)
-                    
-                    if new_trees == 0:
-                        # No new trees: area gets hotter due to:
-                        # 1. Tree mortality (lost cooling)
-                        # 2. Urban heat island effect (area warms)
-                        # 3. Climate change (baseline warming)
-                        
-                        # Current cooling baseline
-                        current_cooling_factor = (avg_dbh / 20.0) ** 2
-                        current_cooling = 0.06 * current_cooling_factor * initial_tree_count
-                        
-                        # Future cooling (trees grow but many die)
-                        future_cooling_factor = (current_dbh / 20.0) ** 2
-                        surviving_trees = initial_tree_count * survival_rate
-                        future_cooling = 0.06 * future_cooling_factor * surviving_trees
-                        
-                        # Net change from tree growth/mortality
-                        temp_change_from_trees = future_cooling - current_cooling
-                        
-                        # Urban heat island penalty (area warms without new trees)
-                        # Stronger penalty over time
-                        uhi_penalty = -0.05 * year  # -0.05°F per year
-                        
-                        # Mortality penalty (lost trees = lost cooling = heating)
-                        lost_trees = initial_tree_count * (1 - survival_rate)
-                        mortality_penalty = -0.06 * 0.8 * lost_trees  # Stronger penalty
-                        
-                        # Climate change baseline warming (from Central Park data)
-                        # Use actual warming rate from baseline data
-                        warming_rate = baseline_trend['recent_slope_f_per_year']
-                        climate_warming = -warming_rate * year  # Negative because it's heating
-                        
-                        # Total: growth benefit is usually small, penalties dominate
-                        temp_annual = temp_change_from_trees + uhi_penalty + mortality_penalty + climate_warming
-                        
-                        # Ensure it's negative (area gets hotter)
-                        if temp_annual > 0:
-                            # If somehow positive, apply additional penalty
-                            temp_annual = -0.1 * year  # Minimum -0.1°F per year
+                    # CO2: use ML model if available, else fallback
+                    if heat_impact_model and heat_impact_model.co2_model:
+                        co2_per_tree = heat_impact_model.predict_co2_sequestration(current_dbh, 1, 1)
+                        co2_annual = co2_per_tree * projected_tree_count
                     else:
-                        # New trees planted: area gets cooler
-                        # Current cooling from existing trees
-                        current_cooling_factor = (avg_dbh / 20.0) ** 2
-                        current_cooling = 0.06 * current_cooling_factor * initial_tree_count
-                        
-                        # Future cooling from surviving + growing trees
-                        future_cooling_factor = (current_dbh / 20.0) ** 2
-                        surviving_trees = initial_tree_count * survival_rate
-                        future_cooling = 0.06 * future_cooling_factor * surviving_trees
-                        
-                        # New trees provide cooling
-                        new_tree_survival = 0.98 ** year
-                        new_tree_cooling_factor = (10.0 / 20.0) ** 2  # New trees start small
-                        new_tree_cooling = 0.06 * new_tree_cooling_factor * (new_trees * new_tree_survival)
-                        
-                        temp_annual = (future_cooling - current_cooling) + new_tree_cooling
+                        co2_annual = 21.77 * size_factor * projected_tree_count
+                    
+                    # Temperature: use trained ML model for accurate predictions
+                    # Key: If 0 new trees, area gets HOTTER (negative change)
+                    if heat_impact_model and heat_impact_model.temp_model:
+                        # Use trained ML model for accurate temperature prediction
+                        existing_trees = int(initial_tree_count * survival_rate)
+                        temp_change_total = heat_impact_model.predict_temperature_change(
+                            current_dbh=current_dbh,
+                            years=year,
+                            new_trees=new_trees,
+                            existing_trees=existing_trees
+                        )
+                        # Convert total change to annual rate
+                        temp_annual = temp_change_total / year if year > 0 else temp_change_total
+                    else:
+                        # Fallback to rule-based calculation
+                        if new_trees == 0:
+                            # No new trees: area gets hotter due to mortality and UHI effect
+                            current_cooling_factor = (avg_dbh / 20.0) ** 2
+                            current_cooling = 0.06 * current_cooling_factor * initial_tree_count
+                            
+                            future_cooling_factor = (current_dbh / 20.0) ** 2
+                            surviving_trees = initial_tree_count * survival_rate
+                            future_cooling = 0.06 * future_cooling_factor * surviving_trees
+                            
+                            temp_change_from_trees = future_cooling - current_cooling
+                            
+                            # Climate change baseline warming
+                            warming_rate = baseline_trend['recent_slope_f_per_year']
+                            climate_warming = -warming_rate * year
+                            
+                            temp_annual = (temp_change_from_trees + climate_warming) / year if year > 0 else temp_change_from_trees + climate_warming
+                            
+                            # Ensure negative if no new trees
+                            if temp_annual > 0:
+                                temp_annual = -0.1 * year
+                        else:
+                            # New trees planted: use predictor's ML method
+                            temp_pred = predictor.predict_temperature_reduction(current_dbh, year, new_trees)
+                            temp_annual = temp_pred.get('annual_reduction_f', 0) * projected_tree_count
                     
                     pm25_annual = 0.18 * size_factor * projected_tree_count
                     

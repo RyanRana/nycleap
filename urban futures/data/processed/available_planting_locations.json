@@ -1,0 +1,29 @@
+{
+  "analysis_date": "2026-01-16T11:59:49.920272",
+  "total_existing_trees": 652173,
+  "spacing_analysis": {
+    "too_close_count": 41202,
+    "optimal_spacing_count": 128075,
+    "too_far_count": 482896,
+    "avg_nearest_neighbor_ft": 42.558584417564425
+  },
+  "sign_constraints": {
+    "stop_sign_violations": 3321,
+    "traffic_sign_violations": 5960,
+    "total_sign_constrained_areas": 449755,
+    "stop_sign_count": 17872
+  },
+  "building_constraints": {
+    "violations": 0,
+    "avg_distance_ft": 276.7328271172791
+  },
+  "estimated_available_locations": {
+    "base_estimate_from_spacing": 482896,
+    "sign_penalty": 67463,
+    "building_penalty": 0,
+    "estimated_available_locations": 415432,
+    "alternative_estimate_by_blocks": 60000,
+    "total_existing_trees": 652173,
+    "potential_increase_percent": 63.69977751302185
+  }
+}

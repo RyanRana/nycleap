@@ -273,3 +273,28 @@
   }
 }
 
+
+.dashboard-button {
+  padding: 0.625rem 1.5rem;
+  border: none;
+  border-radius: 8px;
+  background: #667eea;
+  color: white;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
+  white-space: nowrap;
+  font-family: "Times New Roman", Times, serif;
+}
+
+.dashboard-button:hover {
+  background: #5568d3;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  transform: translateY(-1px);
+}
+
+.dashboard-button:active {
+  transform: translateY(0);
+}

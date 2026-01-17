@@ -359,3 +359,16 @@
   }
 }
 
+/* Events Container on Landing Page */
+.landing-events-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  background: white;
+}
+
+@media (max-width: 768px) {
+  .landing-events-container {
+    padding: 2rem 1rem;
+  }
+}
