@@ -1,2 +1,2 @@
 # Reforest NYC
-[read](urban-futures/docs/TECHNICAL_DOCUMENTATION.md#nyc-climate-resilience-spatial-simulation)
+[read here](https://github.com/RyanRana/reforest-nyc/blob/main/urban%20futures/docs/TECHNICAL_DOCUMENTATION.md)
